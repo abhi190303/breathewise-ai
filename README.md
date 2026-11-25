@@ -1,32 +1,34 @@
 # BreatheWise AI
 
-An air quality assistant prototype for Hack2Skill Challenge 6: Urban Air Quality Assistant. It combines an at-a-glance AQI dashboard with pollutant levels, personal exposure guidance, a 24-hour forecast, city comparison, configurable threshold preference, and a grounded question-and-answer assistant.
-
-## Run locally
-
-1. Install Node.js 20.12 or newer.
-2. In this folder, copy `.env.example` to `.env` (optional for AI). For Groq, add your GroqCloud key to `GROQ_API_KEY`; for xAI Grok, use `GROK_API_KEY`; for Gemini, use `GEMINI_API_KEY`.
-3. Start the app with `npm start`.
-4. Open `http://localhost:3000`.
-
-Without a provider key, the assistant uses its built-in rule-based fallback. Live air quality and weather are fetched from Open-Meteo in the browser. If those requests are unavailable, the dashboard clearly labels its sample values as demo data. No API key is needed for Open-Meteo. Groq and xAI requests are made server-side; account subscriptions are separate from API access.
+An Urban Air Quality Assistant for Hack2Skill Challenge 6. It turns air-quality readings into practical, profile-aware guidance and a simple plan for the day.
 
 ## Features
 
-- Current US AQI, six pollutants, and current weather for Bengaluru by default
-- City selection and optional browser geolocation
-- Profile-aware exposure guidance for six user groups
-- Hourly AQI forecast visualization and city comparison
-- Threshold preference saved locally in the browser
-- Grounded Gemini server proxy with input limits and local fallback
-- Responsive layout and medical guidance disclaimer
+- Current US AQI, six pollutants, and weather for Bengaluru by default
+- City selection, optional geolocation, and a 24-hour AQI forecast
+- Profile-aware exposure guidance, a city comparison, and locally saved AQI alert thresholds
+- Groq-powered assistant with deterministic local fallback when the API is unavailable
+- Clear demo-data labeling and a non-medical-advice notice
+- Small Node HTTP server with request validation, server-side API keys, and a public-file allowlist
 
-## Publish for judges
+## Run locally
 
-The included Node server can run on a Node hosting service. For a static host such as GitHub Pages, the dashboard still works, but the optional Gemini endpoint requires a server host; do not put your Gemini key in frontend code. Add the API key as a server environment variable in your hosting provider.
+Requires Node.js 20.12 or newer.
 
-Before submitting, confirm the event's current instructions. The provided reference mentions a public GitHub repository, one branch, a repository below 1 MB, and up to four submission attempts. Check the current event portal for the correct submission tab and live demo URL requirements.
+1. Copy `.env.example` to `.env`.
+2. For Groq, put your key in `GROQ_API_KEY`. The default model is `openai/gpt-oss-120b`.
+3. Run `npm start` and open `http://localhost:3000`.
+
+The dashboard works without an AI key. Open-Meteo supplies the air-quality and weather data; when those requests fail, the page clearly labels the displayed sample values as demo data.
+
+## Tests
+
+Run `npm test` for AQI band, accessibility-markup, static-file exposure, and assistant-input/configuration checks. The suite uses Node's built-in test runner and requires no extra dependencies.
+
+## Deploy
+
+Deploy this as a Node web service, not as a static-only site, if you want the hosted assistant to reach the server endpoint. Use `npm start` as the start command and set `GROQ_API_KEY` in the hosting provider's private environment settings. Never commit `.env` or `grok_api.env`.
 
 ## Data notes
 
-Open-Meteo data is model-based and can differ from local regulatory monitors. The displayed pollutant levels are reported by the API; carbon monoxide is converted from μg/m³ to mg/m³ internally but displayed in the common pollutant grid as a numeric value. AQI and forecasts are estimates and not medical advice. The prototype does not claim to identify the cause of a reading.
+Open-Meteo readings and forecasts are model-based and may differ from local regulatory monitors. The app offers general environmental guidance; it does not identify specific pollution sources or diagnose medical conditions.

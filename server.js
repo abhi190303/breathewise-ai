@@ -4,8 +4,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-try { process.loadEnvFile(path.join(root, '.env')); }
-catch (error) { if (error.code !== 'ENOENT') throw error; }
+if (process.env.NODE_ENV !== 'test') {
+  try { process.loadEnvFile(path.join(root, '.env')); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
+}
 const port = Number(process.env.PORT) || 3000;
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
@@ -75,9 +77,13 @@ const server = http.createServer(async (req, res) => {
     } catch { return send(res, 400, { error: 'Could not process that request.' }); }
   }
   if (req.method !== 'GET') return send(res, 405, { error: 'Method not allowed.' });
-  const requested = url.pathname === '/' ? '/index.html' : decodeURIComponent(url.pathname);
-  const file = path.resolve(root, `.${requested}`);
-  if (!file.startsWith(root + path.sep)) return send(res, 403, { error: 'Forbidden.' });
+  const publicFiles = new Map([
+    ['/index.html', path.join(root, 'index.html')],
+    ['/src/utils/healthRules.js', path.join(root, 'src', 'utils', 'healthRules.js')]
+  ]);
+  const requested = url.pathname === '/' ? '/index.html' : url.pathname;
+  const file = publicFiles.get(requested);
+  if (!file) return send(res, 404, 'Not found', 'text/plain; charset=utf-8');
   try { const data = await fs.readFile(file); send(res, 200, data, mime[path.extname(file)] || 'application/octet-stream'); }
   catch { send(res, 404, 'Not found', 'text/plain; charset=utf-8'); }
 });
